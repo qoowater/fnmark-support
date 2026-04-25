@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FnMark — Screen Annotation for Mac</title>
+<meta name="description" content="The fastest way to draw, highlight, and zoom on any Mac screen. Built for teachers, presenters, and content creators.">
+<meta property="og:title" content="FnMark — Screen Annotation for Mac">
+<meta property="og:description" content="Press a key. Draw on anything. The Mac annotation tool for teachers, presenters, and creators.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="icon.png">
+<link rel="icon" type="image/png" href="icon.png">
+<style>
+  :root {
+    --bg: #0a0d1a;
+    --bg-2: #11162a;
+    --surface: #1a2040;
+    --text: #e8ecf5;
+    --text-muted: #9aa3bd;
+    --accent: #74b9ff;
+    --gold: #ffd24d;
+    --border: rgba(255,255,255,0.08);
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 50;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    background: rgba(10,13,26,0.7);
+    border-bottom: 1px solid var(--border);
+  }
+  nav .container {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-top: 14px; padding-bottom: 14px;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; }
+  .brand img { width: 32px; height: 32px; border-radius: 8px; }
+  .nav-links { display: flex; gap: 28px; }
+  .nav-links a {
+    color: var(--text-muted); text-decoration: none; font-size: 14px;
+    transition: color .15s;
+  }
+  .nav-links a:hover { color: var(--text); }
+
+  /* HERO */
+  .hero {
+    padding: 100px 0 80px;
+    text-align: center;
+    background: radial-gradient(ellipse at center top, rgba(116,185,255,0.12), transparent 60%);
+  }
+  .hero img.logo {
+    width: 120px; height: 120px; border-radius: 26px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04);
+    margin-bottom: 28px;
+  }
+  .hero h1 {
+    font-size: clamp(40px, 6vw, 64px);
+    font-weight: 800; letter-spacing: -0.02em;
+    margin-bottom: 18px;
+    background: linear-gradient(180deg, #fff, #b8c5e8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .tagline {
+    font-size: clamp(18px, 2vw, 22px);
+    color: var(--text-muted); max-width: 640px;
+    margin: 0 auto 40px;
+  }
+  .cta-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 26px; border-radius: 12px;
+    font-weight: 600; font-size: 15px;
+    text-decoration: none; transition: transform .15s, box-shadow .15s;
+    cursor: pointer; border: none;
+  }
+  .btn-primary {
+    background: linear-gradient(180deg, #fff, #d8e1f5);
+    color: #0a0d1a;
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 32px rgba(255,255,255,0.15); }
+  .btn-secondary {
+    background: var(--surface); color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { background: #232a52; }
+
+  /* VIDEO */
+  .video-section { padding: 60px 0 40px; }
+  .video-wrap {
+    position: relative; max-width: 900px; margin: 0 auto;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 0 0 1px var(--border);
+    background: #000;
+  }
+  .video-wrap video, .video-wrap iframe {
+    width: 100%; display: block; aspect-ratio: 16 / 9;
+    border: none;
+  }
+
+  /* SECTION */
+  section { padding: 80px 0; }
+  .section-title {
+    font-size: clamp(30px, 4vw, 42px);
+    font-weight: 800; letter-spacing: -0.02em;
+    text-align: center; margin-bottom: 16px;
+  }
+  .section-subtitle {
+    text-align: center; color: var(--text-muted);
+    max-width: 600px; margin: 0 auto 56px; font-size: 17px;
+  }
+
+  /* FEATURE GRID */
+  .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+  .feature-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 28px;
+    transition: transform .15s, border-color .15s;
+  }
+  .feature-card:hover { transform: translateY(-3px); border-color: rgba(116,185,255,0.3); }
+  .feature-icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), #5a8eda);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; margin-bottom: 18px;
+  }
+  .feature-card h3 { font-size: 18px; margin-bottom: 8px; font-weight: 700; }
+  .feature-card p { color: var(--text-muted); font-size: 14.5px; }
+
+  /* USE CASES */
+  .who { background: var(--bg-2); }
+  .who-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+  .who-card {
+    padding: 24px; border-radius: 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    text-align: center;
+  }
+  .who-emoji { font-size: 32px; margin-bottom: 10px; }
+  .who-card h4 { font-size: 16px; margin-bottom: 4px; }
+  .who-card p { color: var(--text-muted); font-size: 13.5px; }
+
+  /* FAQ */
+  .faq { max-width: 760px; margin: 0 auto; }
+  details {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px 22px; margin-bottom: 12px;
+    cursor: pointer;
+  }
+  details[open] { border-color: rgba(116,185,255,0.3); }
+  summary {
+    list-style: none; font-weight: 600; font-size: 16px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: '+'; color: var(--text-muted); font-size: 22px; transition: transform .2s; }
+  details[open] summary::after { transform: rotate(45deg); }
+  details p { color: var(--text-muted); margin-top: 12px; font-size: 15px; }
+
+  /* CTA BAND */
+  .cta-band {
+    background: linear-gradient(135deg, #1a2040, #2a3370);
+    border-radius: 24px; padding: 56px 32px; text-align: center;
+    margin: 40px 0;
+  }
+  .cta-band h2 { font-size: 32px; margin-bottom: 14px; }
+  .cta-band p { color: var(--text-muted); margin-bottom: 28px; font-size: 17px; }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 0 60px;
+    color: var(--text-muted); font-size: 14px;
+  }
+  footer .container {
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 20px;
+  }
+  footer a { color: var(--text-muted); text-decoration: none; margin-left: 20px; }
+  footer a:hover { color: var(--text); }
+
+  @media (max-width: 640px) {
+    .nav-links { display: none; }
+    .hero { padding: 60px 0 40px; }
+    section { padding: 60px 0; }
+    footer .container { flex-direction: column; align-items: flex-start; }
+    footer a { margin-left: 0; margin-right: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <div class="brand">
+      <img src="icon.png" alt="FnMark">
+      FnMark
+    </div>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#who">Who It's For</a>
+      <a href="#faq">FAQ</a>
+      <a href="#support">Support</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container">
+    <img src="icon.png" alt="FnMark icon" class="logo">
+    <h1>Annotate Anything on Your Mac</h1>
+    <p class="tagline">
+      Press a single key. Draw, highlight, and zoom on any screen.
+      Built for teachers, presenters, and content creators who want to communicate without friction.
+    </p>
+    <div class="cta-row">
+      <a href="https://apps.apple.com/app/fnmark" class="btn btn-primary">
+        Download on Mac App Store
+      </a>
+      <a href="#video" class="btn btn-secondary">Watch Demo</a>
+    </div>
+  </div>
+</header>
+
+<section class="video-section" id="video">
+  <div class="container">
+    <div class="video-wrap">
+      <!-- OPTION A: Local MP4 (replace demo.mp4 with your file) -->
+      <video controls poster="poster.jpg" preload="metadata">
+        <source src="demo.mp4" type="video/mp4">
+        Your browser does not support video playback.
+      </video>
+
+      <!-- OPTION B: YouTube embed (uncomment & replace VIDEO_ID) -->
+      <!--
+      <iframe
+        src="https://www.youtube.com/embed/VIDEO_ID?rel=0&modestbranding=1"
+        title="FnMark Demo"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen></iframe>
+      -->
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="container">
+    <h2 class="section-title">Everything You Need to Mark Up Your Screen</h2>
+    <p class="section-subtitle">A complete annotation toolkit, always one keystroke away.</p>
+
+    <div class="features">
+      <div class="feature-card">
+        <div class="feature-icon">✏️</div>
+        <h3>Annotation Tools</h3>
+        <p>Pen, line, arrow, rectangle, ellipse, text, and numbered markers. Adjustable stroke width and color.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔴</div>
+        <h3>Laser Pointer</h3>
+        <p>Strokes that fade automatically — perfect for guiding attention during live presentations.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <h3>Cursor Highlight</h3>
+        <p>Customizable ring around your cursor with click ripples and scale animations.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔍</div>
+        <h3>Zoom Lens</h3>
+        <p>Floating magnifier follows your mouse. Show clients the smallest details with confidence.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🌟</div>
+        <h3>Spotlight Mode</h3>
+        <p>Dim the screen except a circle around your cursor. Guide audience attention exactly where you want.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎨</div>
+        <h3>Whiteboard</h3>
+        <p>Turn your screen into a blank canvas instantly. Brainstorm, sketch, or teach without distraction.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⌨️</div>
+        <h3>Custom Hotkeys</h3>
+        <p>System-wide shortcuts that work in any app. Choose your interactive key — Fn, Caps Lock, Cmd, Option.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💾</div>
+        <h3>Export & Persist</h3>
+        <p>Auto-saves your settings and last session. Export annotated screen as PNG with one shortcut.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎛️</div>
+        <h3>Customizable</h3>
+        <p>Adjustable toolbar opacity, favorite colors, multiple monitor support, dark mode native.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="who" id="who">
+  <div class="container">
+    <h2 class="section-title">Built for People Who Share Their Screens</h2>
+    <p class="section-subtitle">Whoever you are, FnMark fits the way you work.</p>
+
+    <div class="who-grid">
+      <div class="who-card">
+        <div class="who-emoji">📚</div>
+        <h4>Teachers</h4>
+        <p>Highlight key points during live lessons</p>
+      </div>
+      <div class="who-card">
+        <div class="who-emoji">💼</div>
+        <h4>Presenters</h4>
+        <p>Add context to slides on the fly</p>
+      </div>
+      <div class="who-card">
+        <div class="who-emoji">🎬</div>
+        <h4>Content Creators</h4>
+        <p>Make tutorial videos that pop</p>
+      </div>
+      <div class="who-card">
+        <div class="who-emoji">👨‍💻</div>
+        <h4>Developers</h4>
+        <p>Walk through code reviews and demos</p>
+      </div>
+      <div class="who-card">
+        <div class="who-emoji">🎨</div>
+        <h4>Designers</h4>
+        <p>Mark up mockups during reviews</p>
+      </div>
+      <div class="who-card">
+        <div class="who-emoji">📞</div>
+        <h4>Remote Teams</h4>
+        <p>Make Zoom and Meet calls more engaging</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="container">
+    <h2 class="section-title">Frequently Asked Questions</h2>
+
+    <div class="faq">
+      <details>
+        <summary>Does FnMark work with Zoom, Google Meet, or Microsoft Teams?</summary>
+        <p>Yes. FnMark draws on top of your screen, so anything you annotate is visible to people watching your shared screen — regardless of the meeting platform.</p>
+      </details>
+      <details>
+        <summary>Do I need to grant Screen Recording permission?</summary>
+        <p>Only if you use the Zoom Lens or Export-as-PNG features. Basic annotation works without it. macOS will prompt you the first time you use those features.</p>
+      </details>
+      <details>
+        <summary>Does FnMark collect any data?</summary>
+        <p>No. FnMark runs entirely on your Mac. There is no telemetry, no analytics, no internet connection at all.</p>
+      </details>
+      <details>
+        <summary>Can I customize the keyboard shortcuts?</summary>
+        <p>Yes. Every shortcut is customizable in Settings → Shortcuts, including the "interactive mode" key (default Fn) used to enable drawing.</p>
+      </details>
+      <details>
+        <summary>Does it work on multiple monitors?</summary>
+        <p>Yes. FnMark creates an overlay on every connected display.</p>
+      </details>
+      <details>
+        <summary>What macOS version do I need?</summary>
+        <p>macOS 14.0 (Sonoma) or later. Apple Silicon and Intel Macs are both supported.</p>
+      </details>
+      <details>
+        <summary>Is it a one-time purchase?</summary>
+        <p>Yes. One purchase, free updates forever. No subscriptions.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="cta-band">
+      <h2>Ready to upgrade your screen?</h2>
+      <p>Join teachers, presenters, and creators making their Mac screens unforgettable.</p>
+      <a href="https://apps.apple.com/app/fnmark" class="btn btn-primary">Download on Mac App Store</a>
+    </div>
+  </div>
+</section>
+
+<footer id="support">
+  <div class="container">
+    <div>© 2026 FnMark. Made with care for the Mac.</div>
+    <div>
+      <a href="mailto:qoowater@gmail.com">Contact</a>
+      <a href="#faq">FAQ</a>
+      <a href="privacy.html">Privacy</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
